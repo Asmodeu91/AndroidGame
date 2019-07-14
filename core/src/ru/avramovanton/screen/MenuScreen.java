@@ -15,10 +15,11 @@ import ru.avramovanton.base.BaseScreen;
 public class MenuScreen<stage> extends BaseScreen {
 
     private Texture img;
-    private Vector2 touch;
+    private Vector2 vtouch;
     private Vector2 v;
     private Vector2 pos;
     private Vector2 target;
+    private Vector2 vSpeed = new Vector2(0.5f, 0.5f);
     private boolean dragEnabled = true;
     private int speed = 1;
 
@@ -28,11 +29,10 @@ public class MenuScreen<stage> extends BaseScreen {
     public void show() {
         super.show();
         img = new Texture("badlogic.jpg");
-        v = new Vector2(0, 0);
-        v = new Vector2(0, 0);
-        pos = new Vector2((Gdx.graphics.getWidth()-img.getWidth())/2, (Gdx.graphics.getHeight()-img.getHeight())/2);
+        v = new Vector2( 0, 0);
+        pos = new Vector2( (Gdx.graphics.getWidth()-img.getWidth())/2, (Gdx.graphics.getHeight()-img.getHeight())/2);
         System.out.println(pos);
-        touch = pos.cpy();
+        vtouch = pos.cpy();
     }
 
     @Override
@@ -43,7 +43,7 @@ public class MenuScreen<stage> extends BaseScreen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
         drawimg(batch);
-        batch.draw(img, pos.x, pos.y);
+        batch.draw(img, 0f, 0f, 0.3f, 0.3f);
         batch.end();
         processTouch();
 
@@ -62,7 +62,8 @@ public class MenuScreen<stage> extends BaseScreen {
         if (button == Input.Buttons.LEFT) {
             if (isClicked(screenX, screenY)) {
                 dragEnabled = true;
-                System.out.println(touch);
+                System.out.println(vtouch);
+                System.out.println("Тачдаун");
 
 
 
@@ -76,7 +77,8 @@ public class MenuScreen<stage> extends BaseScreen {
         if (button == Input.Buttons.LEFT) {
             captureTouch(screenX, screenY);
             dragEnabled = false;
-            pos = touch;
+            vSpeed.set(vtouch).sub(pos).setLength(speed);
+            //pos = touch;
         }
         return false;
     }
@@ -91,33 +93,34 @@ public class MenuScreen<stage> extends BaseScreen {
 
     private void processTouch() {
         if (pos == null) return;
-        if (touch == null) return;
-        if (pos.equals(touch)) return;
-        final Vector2 vDest = touch.cpy().sub(pos);
+        if (vtouch == null) return;
+        if (pos.equals(vtouch)) return;
+        final Vector2 vDest = vtouch.cpy().sub(pos);
         final Vector2 vDir = vDest.cpy().nor();
         final Vector2 vSpeed = vDir.scl(speed);
         if (vSpeed.len() > vDest.len()) {
-            v.set(touch);
+            pos.set(vtouch);
         }
         else {
-            v.add(vSpeed);
+            pos.add(vSpeed);
         }
     }
 
     public boolean touchDragged(final int screenX, final int screenY, final int pointer) {
         super.touchDragged(screenX, screenY, pointer);
         if (pos == null) return false;
-        if (touch == null) return false;
+        if (vtouch == null) return false;
         if (dragEnabled) {
             captureTouch(screenX, screenY);
-            pos.set(touch);
+            pos.set(vtouch);
+
         }
         return false;
     }
 
     private void captureTouch(final int touchX, final int touchY) {
         if (img == null) return;
-        touch = new Vector2(   touchX-img.getWidth()/2,
+        vtouch = new Vector2(   touchX-img.getWidth()/2,
                 Gdx.graphics.getHeight() - touchY - img.getHeight()/2);
     }
 
