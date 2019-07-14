@@ -14,6 +14,6 @@ import ru.avramovanton.screen.MenuScreen;
 public class AsmodeuGame extends Game {
     @Override
     public void create() {
-        setScreen(new MenuScreen());
+        setScreen(new MenuScreen(this));
     }
 }

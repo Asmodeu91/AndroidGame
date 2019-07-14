@@ -1,130 +1,106 @@
 package ru.avramovanton.screen;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import ru.avramovanton.base.BaseScreen;
+import ru.avramovanton.math.Rect;
+import ru.avramovanton.sprite.Background;
+import ru.avramovanton.sprite.ButtonExit;
+import ru.avramovanton.sprite.ButtonPlay;
+import ru.avramovanton.sprite.Star;
 
+public class MenuScreen extends BaseScreen {
 
-public class MenuScreen<stage> extends BaseScreen {
+    private static final int STAR_COUNT =300;
 
-    private Texture img;
-    private Vector2 touch;
-    private Vector2 v;
-    private Vector2 pos;
-    private Vector2 target;
-    private boolean dragEnabled = true;
-    private int speed = 1;
+    private Game game;
 
+    private TextureAtlas atlas;
+    private Texture bg;
+    private Background background;
 
+    private Star[] starArray;
+    private ButtonExit buttonExit;
+    private ButtonPlay buttonPlay;
+
+    public MenuScreen(Game game) {
+        this.game = game;
+    }
 
     @Override
     public void show() {
         super.show();
-        img = new Texture("badlogic.jpg");
-        v = new Vector2(0, 0);
-        v = new Vector2(0, 0);
-        pos = new Vector2((Gdx.graphics.getWidth()-img.getWidth())/2, (Gdx.graphics.getHeight()-img.getHeight())/2);
-        System.out.println(pos);
-        touch = pos.cpy();
+        atlas = new TextureAtlas("textures/menuAtlas.tpack");
+        bg = new Texture("textures/bg.png");
+        background = new Background(new TextureRegion(bg));
+        starArray = new Star[STAR_COUNT];
+        for (int i = 0; i < STAR_COUNT; i++) {
+            starArray[i] = new Star(atlas);
+        }
+        buttonExit = new ButtonExit(atlas);
+        buttonPlay = new ButtonPlay(atlas, game);
+    }
+
+    @Override
+    public void resize(Rect worldBounds) {
+        background.resize(worldBounds);
+        for (Star star:starArray) {
+            star.resize(worldBounds);
+        }
+        buttonExit.resize(worldBounds);
+        buttonPlay.resize(worldBounds);
     }
 
     @Override
     public void render(float delta) {
         super.render(delta);
-
-        Gdx.gl.glClearColor(0.26f, 0.5f, 0.8f, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        batch.begin();
-        drawimg(batch);
-        batch.draw(img, pos.x, pos.y);
-        batch.end();
-        processTouch();
-
-
+        update(delta);
+        draw();
     }
 
     @Override
     public void dispose() {
+        atlas.dispose();
+        bg.dispose();
         super.dispose();
-        img.dispose();
     }
 
     @Override
-    public boolean touchDown(final int screenX, final int screenY, final int pointer, final int button) {
-        super.touchDown(screenX, screenY, pointer, button);
-        if (button == Input.Buttons.LEFT) {
-            if (isClicked(screenX, screenY)) {
-                dragEnabled = true;
-                System.out.println(touch);
-
-
-
-            }
-        }
+    public boolean touchDown(Vector2 touch, int pointer, int button) {
+        buttonExit.touchDown(touch, pointer, button);
+        buttonPlay.touchDown(touch, pointer, button);
         return false;
     }
 
-    public boolean touchUp(final int screenX, final int screenY, final int pointer, final int button) {
-        super.touchUp(screenX, screenY, pointer, button);
-        if (button == Input.Buttons.LEFT) {
-            captureTouch(screenX, screenY);
-            dragEnabled = false;
-            pos = touch;
-        }
+    @Override
+    public boolean touchUp(Vector2 touch, int pointer, int button) {
+        buttonExit.touchUp(touch, pointer, button);
+        buttonPlay.touchUp(touch, pointer, button);
         return false;
     }
 
-    private boolean isClicked(final float clickX, final float clickY) {
-        if (pos == null) return false;
-        if (img == null) return false;
-        final float realClickY = Gdx.graphics.getHeight() - clickY;
-        return (clickX >= pos.x && clickX <= pos.x+img.getWidth() &&
-                realClickY >= pos.y && realClickY <= pos.y+img.getHeight());
-    }
-
-    private void processTouch() {
-        if (pos == null) return;
-        if (touch == null) return;
-        if (pos.equals(touch)) return;
-        final Vector2 vDest = touch.cpy().sub(pos);
-        final Vector2 vDir = vDest.cpy().nor();
-        final Vector2 vSpeed = vDir.scl(speed);
-        if (vSpeed.len() > vDest.len()) {
-            v.set(touch);
-        }
-        else {
-            v.add(vSpeed);
+    private void update(float delta) {
+        for (Star star:starArray) {
+            star.update(delta);
         }
     }
 
-    public boolean touchDragged(final int screenX, final int screenY, final int pointer) {
-        super.touchDragged(screenX, screenY, pointer);
-        if (pos == null) return false;
-        if (touch == null) return false;
-        if (dragEnabled) {
-            captureTouch(screenX, screenY);
-            pos.set(touch);
+    private void draw() {
+        Gdx.gl.glClearColor(0.26f, 0.5f, 0.8f, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        batch.begin();
+        background.draw(batch);
+        for (Star star:starArray) {
+            star.draw(batch);
         }
-        return false;
+        buttonExit.draw(batch);
+        buttonPlay.draw(batch);
+        batch.end();
     }
-
-    private void captureTouch(final int touchX, final int touchY) {
-        if (img == null) return;
-        touch = new Vector2(   touchX-img.getWidth()/2,
-                Gdx.graphics.getHeight() - touchY - img.getHeight()/2);
-    }
-
-    private void drawimg( final SpriteBatch batch) {
-        if ((img != null) && (pos != null)) {
-            batch.draw(img, pos.x, pos.y);
-        }
-    }
-
 }
