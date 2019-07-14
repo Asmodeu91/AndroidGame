@@ -19,6 +19,7 @@ public class MenuScreen<stage> extends BaseScreen {
     private Vector2 v;
     private Vector2 pos;
     private Vector2 target;
+    private Vector2 vSpeed = new Vector2(0.5f, 0.5f);
     private boolean dragEnabled = true;
     private int speed = 1;
 
@@ -28,7 +29,6 @@ public class MenuScreen<stage> extends BaseScreen {
     public void show() {
         super.show();
         img = new Texture("badlogic.jpg");
-        v = new Vector2(0, 0);
         v = new Vector2(0, 0);
         pos = new Vector2((Gdx.graphics.getWidth()-img.getWidth())/2, (Gdx.graphics.getHeight()-img.getHeight())/2);
         System.out.println(pos);
@@ -76,7 +76,8 @@ public class MenuScreen<stage> extends BaseScreen {
         if (button == Input.Buttons.LEFT) {
             captureTouch(screenX, screenY);
             dragEnabled = false;
-            pos = touch;
+            vSpeed.set(touch).sub(pos).setLength(speed);
+            //pos = touch;
         }
         return false;
     }
@@ -97,10 +98,10 @@ public class MenuScreen<stage> extends BaseScreen {
         final Vector2 vDir = vDest.cpy().nor();
         final Vector2 vSpeed = vDir.scl(speed);
         if (vSpeed.len() > vDest.len()) {
-            v.set(touch);
+            pos.set(touch);
         }
         else {
-            v.add(vSpeed);
+            pos.add(vSpeed);
         }
     }
 
