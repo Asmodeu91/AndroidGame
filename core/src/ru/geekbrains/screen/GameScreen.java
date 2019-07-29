@@ -9,11 +9,14 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.List;
+
 import ru.geekbrains.base.BaseScreen;
 import ru.geekbrains.math.Rect;
 import ru.geekbrains.pool.BulletPool;
 import ru.geekbrains.pool.EnemyPool;
 import ru.geekbrains.sprite.Background;
+import ru.geekbrains.sprite.Bullet;
 import ru.geekbrains.sprite.MainShip;
 import ru.geekbrains.sprite.Star;
 import ru.geekbrains.utils.EnemyGenerator;
@@ -118,6 +121,39 @@ public class GameScreen extends BaseScreen {
     }
 
     private void checkCollisions() {
+
+        List<EnemyShip> ships = enemyPool.getActiveObjects();
+        List<Bullet> bullets = bulletPool.getActiveObjects();
+
+
+        for (Bullet bullet : bullets) {
+            for (EnemyShip ship : ships) {
+                if (ship.isContact(bullet) && bullet.getOwner() != ship) {
+                    System.out.println("Bullet hit enemy: " + ship. + " with damage:" + bullet.getDamage());
+                    ship.hit(bullet.getDamage());
+                    bullet.setDestroyed(true);
+                    break;
+                }
+            }
+            if (mainShip.isContact(bullet) && bullet.getOwner() != mainShip) {
+                System.out.println("Bullet hit main ship: " + mainShip.getHealth() + " with damage:" + bullet.getDamage());
+                mainShip.hit(bullet.getDamage());
+                bullet.setDestroyed(true);
+            }
+        }
+
+
+        for (EnemyShip ship : ships) {
+            if (mainShip.isContact(ship)) {
+                System.out.println("Enemy ship hit main ship: " + mainShip.getHealth() + " with damage:" + ship.getDamage() * 2);
+                mainShip.hit(ship.getDamage() * 2);
+                ship.setDestroyed(true);
+            }
+        }
+        if (mainShip.getHealth() <= 0) {
+            System.out.println("GAME OVER");    //TODO: Make correct game over
+            gameOver = true;
+        }
 
     }
 

@@ -104,4 +104,20 @@ public class Rect {
     public String toString() {
         return "Rectangle: pos" + pos + " size(" + getWidth() + ", " + getHeight() + ")";
     }
+
+    public boolean isInsideMe(float touchX, float touchY) {
+        return touchX >= getLeft()+getWidth()/4 && touchX <= getRight()-getWidth()/4 && touchY >= getBottom()+getHeight()/4 && touchY <= getTop()-getHeight()/4;
+    }
+
+    public boolean isContact(Rect rect) {
+        if (isInsideMe(rect.getLeft(), rect.getTop())) return true;
+        if (isInsideMe(rect.getLeft(), rect.getBottom())) return true;
+        if (isInsideMe(rect.getRight(), rect.getTop())) return true;
+        if (isInsideMe(rect.getRight(), rect.getBottom())) return true;
+        if (rect.isInsideMe(getLeft(), getTop())) return true;
+        if (rect.isInsideMe(getLeft(), getBottom())) return true;
+        if (rect.isInsideMe(getRight(), getTop())) return true;
+        if (rect.isInsideMe(getRight(), getBottom())) return true;
+        return false;
+    }
 }
